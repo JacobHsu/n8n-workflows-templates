@@ -47,6 +47,10 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files
 app.use(express.static(path.join(__dirname, '../static')));
 
+// Serve i18n files
+app.use('/src', express.static(path.join(__dirname, '.')));
+app.use('/locales', express.static(path.join(__dirname, 'locales')));
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'healthy', message: 'N8N Workflow API is running' });
@@ -251,11 +255,104 @@ app.get('/api/integrations', async (req, res) => {
   }
 });
 
-// Get categories (based on integrations)
+// Get categories (for dropdown filter)
 app.get('/api/categories', async (req, res) => {
   try {
+    const categoriesPath = path.join(__dirname, '../context/search_categories.json');
+
+    if (fs.existsSync(categoriesPath)) {
+      const categoriesData = await fs.readJson(categoriesPath);
+
+      // Handle both array format and categories object format
+      let categories = [];
+      if (Array.isArray(categoriesData)) {
+        // Extract unique categories from array format
+        const categorySet = new Set();
+        categoriesData.forEach(item => {
+          if (item.category) {
+            categorySet.add(item.category);
+          }
+        });
+        categories = Array.from(categorySet).sort();
+      } else if (categoriesData.categories) {
+        // Handle object format
+        categories = Object.keys(categoriesData.categories).sort();
+      }
+
+      console.log(`Found ${categories.length} categories:`, categories);
+      res.json({ categories });
+    } else {
+      // Fallback categories
+      const categories = [
+        'AI Agent Development',
+        'Business Process Automation',
+        'Cloud Storage & File Management',
+        'Communication & Messaging',
+        'Creative Content & Video Automation',
+        'Creative Design Automation',
+        'CRM & Sales',
+        'Data Processing & Analysis',
+        'E-commerce & Retail',
+        'Financial & Accounting',
+        'Marketing & Advertising Automation',
+        'Project Management',
+        'Social Media Management',
+        'Technical Infrastructure & DevOps',
+        'Web Scraping & Data Extraction',
+        'Uncategorized'
+      ];
+      console.log('Using fallback categories:', categories);
+      res.json({ categories });
+    }
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    res.status(500).json({ error: 'Error fetching categories', details: error.message });
+  }
+});
+
+// Get category mappings (filename -> category)
+app.get('/api/category-mappings', async (req, res) => {
+  try {
+    const categoriesPath = path.join(__dirname, '../context/search_categories.json');
+
+    if (fs.existsSync(categoriesPath)) {
+      const categoriesData = await fs.readJson(categoriesPath);
+      const mappings = {};
+
+      if (Array.isArray(categoriesData)) {
+        // Handle array format: convert to filename -> category mapping
+        categoriesData.forEach(item => {
+          if (item.filename && item.category) {
+            mappings[item.filename] = item.category;
+          }
+        });
+      } else if (categoriesData.categories) {
+        // Handle object format: convert categories structure to filename -> category mapping
+        Object.entries(categoriesData.categories).forEach(([category, files]) => {
+          if (Array.isArray(files)) {
+            files.forEach(filename => {
+              mappings[filename] = category;
+            });
+          }
+        });
+      }
+
+      console.log(`Created ${Object.keys(mappings).length} category mappings`);
+      res.json({ mappings });
+    } else {
+      res.json({ mappings: {} });
+    }
+  } catch (error) {
+    console.error('Error fetching category mappings:', error);
+    res.status(500).json({ error: 'Error fetching category mappings', details: error.message });
+  }
+});
+
+// Get categorized workflows (for category-based browsing)
+app.get('/api/categories/workflows', async (req, res) => {
+  try {
     const { workflows } = await db.searchWorkflows('', 'all', 'all', false, 1000, 0);
-    
+
     const categories = {
       'Communication': ['Slack', 'Discord', 'Telegram', 'Mattermost', 'Teams'],
       'CRM': ['HubSpot', 'Salesforce', 'Pipedrive', 'Copper'],
@@ -265,20 +362,20 @@ app.get('/api/categories', async (req, res) => {
       'Storage': ['GoogleDrive', 'Dropbox', 'OneDrive', 'AWS S3'],
       'Other': []
     };
-    
+
     // Categorize workflows
     const categorizedWorkflows = {};
     Object.keys(categories).forEach(category => {
       categorizedWorkflows[category] = [];
     });
-    
+
     workflows.forEach(workflow => {
       let categorized = false;
-      
+
       // Check each integration against categories
       workflow.integrations.forEach(integration => {
         Object.entries(categories).forEach(([category, services]) => {
-          if (services.some(service => 
+          if (services.some(service =>
             integration.toLowerCase().includes(service.toLowerCase())
           )) {
             categorizedWorkflows[category].push(workflow);
@@ -286,17 +383,17 @@ app.get('/api/categories', async (req, res) => {
           }
         });
       });
-      
+
       // If not categorized, add to Other
       if (!categorized) {
         categorizedWorkflows['Other'].push(workflow);
       }
     });
-    
+
     res.json(categorizedWorkflows);
   } catch (error) {
-    console.error('Error fetching categories:', error);
-    res.status(500).json({ error: 'Error fetching categories', details: error.message });
+    console.error('Error fetching categorized workflows:', error);
+    res.status(500).json({ error: 'Error fetching categorized workflows', details: error.message });
   }
 });
 

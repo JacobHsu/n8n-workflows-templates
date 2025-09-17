@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>⚡ N8N Workflow Documentation</title>
+  <title data-i18n="app.title">⚡ N8N 工作流程文件</title>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+  <script src="/src/i18n.js"></script>
   <style>
     /* Modern CSS Reset and Base */
     * {
@@ -580,24 +581,33 @@
     <!-- Header -->
     <header class="header">
       <div class="container">
-        <h1 class="title">⚡ N8N Workflow Documentation</h1>
-        <p class="subtitle">Lightning-fast workflow browser with instant search</p>
+        <h1 class="title" data-i18n="app.title">⚡ N8N 工作流程文件</h1>
+        <p class="subtitle" data-i18n="app.subtitle">專業組織的 n8n 工作流程集合</p>
+
+        <!-- Language Selector -->
+        <div class="language-selector" style="margin-top: 1rem;">
+          <label for="languageSelect" style="margin-right: 0.5rem; font-size: 0.875rem; color: var(--text-secondary);">語言 | Language:</label>
+          <select id="languageSelect" style="padding: 0.25rem 0.5rem; border: 1px solid var(--border); border-radius: 0.25rem; background: var(--bg); color: var(--text); font-size: 0.875rem;">
+            <option value="zh-TW">繁體中文</option>
+            <option value="en">English</option>
+          </select>
+        </div>
         <div class="stats">
           <div class="stat">
             <span class="stat-number" id="totalCount">0</span>
-            <span class="stat-label">Total</span>
+            <span class="stat-label" data-i18n="stats.totalWorkflows">總工作流程</span>
           </div>
           <div class="stat">
             <span class="stat-number" id="activeCount">0</span>
-            <span class="stat-label">Active</span>
+            <span class="stat-label" data-i18n="stats.activeWorkflows">啟用的工作流程</span>
           </div>
           <div class="stat">
             <span class="stat-number" id="nodeCount">0</span>
-            <span class="stat-label">Total Nodes</span>
+            <span class="stat-label" data-i18n="stats.totalNodes">總節點數</span>
           </div>
           <div class="stat">
             <span class="stat-number" id="integrationCount">0</span>
-            <span class="stat-label">Integrations</span>
+            <span class="stat-label" data-i18n="stats.uniqueIntegrations">獨特整合</span>
           </div>
         </div>
       </div>
@@ -608,35 +618,35 @@
       <div class="container">
         <div class="search-section">
           <input type="text" id="searchInput" class="search-input"
-            placeholder="Search workflows by name, description, or integration...">
+            data-i18n-placeholder="search.placeholder" placeholder="搜尋工作流程...">
         </div>
 
         <div class="filter-section">
           <div class="filter-group">
-            <label for="triggerFilter">Trigger:</label>
+            <label for="triggerFilter" data-i18n="filters.trigger">觸發器:</label>
             <select id="triggerFilter">
-              <option value="all">All Types</option>
-              <option value="Webhook">Webhook</option>
-              <option value="Scheduled">Scheduled</option>
-              <option value="Manual">Manual</option>
-              <option value="Complex">Complex</option>
+              <option value="all" data-i18n="search.allTriggers">所有觸發器</option>
+              <option value="Webhook" data-i18n="triggers.webhook">Webhook</option>
+              <option value="Scheduled" data-i18n="triggers.scheduled">排程</option>
+              <option value="Manual" data-i18n="triggers.manual">手動</option>
+              <option value="Complex" data-i18n="triggers.complex">複合</option>
             </select>
           </div>
 
           <div class="filter-group">
-            <label for="complexityFilter">Complexity:</label>
+            <label for="complexityFilter" data-i18n="filters.complexity">複雜度:</label>
             <select id="complexityFilter">
-              <option value="all">All Levels</option>
-              <option value="low">Low (≤5 nodes)</option>
-              <option value="medium">Medium (6-15 nodes)</option>
-              <option value="high">High (16+ nodes)</option>
+              <option value="all" data-i18n="search.allComplexity">所有複雜度</option>
+              <option value="low" data-i18n="complexity.lowWithNodes">低 (≤5 節點)</option>
+              <option value="medium" data-i18n="complexity.mediumWithNodes">中 (6-15 節點)</option>
+              <option value="high" data-i18n="complexity.highWithNodes">高 (16+ 節點)</option>
             </select>
           </div>
 
           <div class="filter-group">
-            <label for="categoryFilter">Category:</label>
+            <label for="categoryFilter" data-i18n="filters.category">分類:</label>
             <select id="categoryFilter">
-              <option value="all">All Categories</option>
+              <option value="all" data-i18n="search.allCategories">所有分類</option>
               <!-- Categories will be populated dynamically -->
             </select>
           </div>
@@ -644,7 +654,7 @@
           <div class="filter-group">
             <label>
               <input type="checkbox" id="activeOnly">
-              Active only
+              <span data-i18n="status.active">僅啟用</span>
             </label>
           </div>
 
@@ -663,23 +673,23 @@
         <!-- Loading State -->
         <div id="loadingState" class="state loading">
           <div class="icon">⚡</div>
-          <h3>Loading workflows...</h3>
-          <p>Please wait while we fetch your workflow data</p>
+          <h3 data-i18n="messages.loading">載入中...</h3>
+          <p data-i18n="search.searching">搜尋中...</p>
         </div>
 
         <!-- Error State -->
         <div id="errorState" class="state error hidden">
           <div class="icon">❌</div>
-          <h3>Error Loading Workflows</h3>
-          <p id="errorMessage">Something went wrong. Please try again.</p>
-          <button id="retryBtn" class="retry-btn">Retry</button>
+          <h3 data-i18n="messages.error">發生錯誤</h3>
+          <p id="errorMessage" data-i18n="messages.networkError">網路連接錯誤</p>
+          <button id="retryBtn" class="retry-btn" data-i18n="actions.refresh">重新整理</button>
         </div>
 
         <!-- No Results State -->
         <div id="noResultsState" class="state hidden">
           <div class="icon">🔍</div>
-          <h3>No workflows found</h3>
-          <p>Try adjusting your search terms or filters</p>
+          <h3 data-i18n="search.noResults">未找到相符的工作流程</h3>
+          <p>嘗試調整您的搜尋條件或篩選器</p>
         </div>
 
         <!-- Workflows Grid -->
@@ -689,7 +699,7 @@
 
         <!-- Load More -->
         <div id="loadMoreContainer" class="load-more hidden">
-          <button id="loadMoreBtn" class="load-more-btn">Load More</button>
+          <button id="loadMoreBtn" class="load-more-btn" data-i18n="actions.loadMore">載入更多</button>
         </div>
       </div>
     </main>
@@ -698,39 +708,39 @@
     <div id="workflowModal" class="modal hidden">
       <div class="modal-content">
         <div class="modal-header">
-          <h2 class="modal-title" id="modalTitle">Workflow Details</h2>
+          <h2 class="modal-title" id="modalTitle" data-i18n="workflow.details">工作流程詳細資料</h2>
           <button class="modal-close" id="modalClose">&times;</button>
         </div>
         <div class="modal-body">
           <div class="workflow-detail">
-            <h4>Description</h4>
+            <h4 data-i18n="workflow.description">描述</h4>
             <p id="modalDescription">Loading...</p>
           </div>
 
           <div class="workflow-detail">
-            <h4>Statistics</h4>
+            <h4 data-i18n="stats.title">統計資料</h4>
             <div id="modalStats">Loading...</div>
           </div>
 
           <div class="workflow-detail">
-            <h4>Integrations</h4>
+            <h4 data-i18n="workflow.integrations">整合</h4>
             <div id="modalIntegrations">Loading...</div>
           </div>
 
           <div class="workflow-detail">
-            <h4>Actions</h4>
+            <h4 data-i18n="actions.title">動作</h4>
             <div class="workflow-actions">
-              <a id="downloadBtn" class="action-btn primary" href="#" download>📥 Download JSON</a>
-              <button id="viewJsonBtn" class="action-btn">📄 View JSON</button>
-              <button id="viewDiagramBtn" class="action-btn">📊 View Diagram</button>
+              <a id="downloadBtn" class="action-btn primary" href="#" download><span data-i18n="workflow.download">📥 下載 JSON</span></a>
+              <button id="viewJsonBtn" class="action-btn"><span data-i18n="workflow.viewJson">📄 檢視 JSON</span></button>
+              <button id="viewDiagramBtn" class="action-btn"><span data-i18n="workflow.diagram">📊 檢視流程圖</span></button>
             </div>
           </div>
 
           <div class="workflow-detail hidden" id="jsonSection">
             <div class="section-header">
-              <h4>Workflow JSON</h4>
+              <h4 data-i18n="workflow.json">工作流程 JSON</h4>
               <button id="copyJsonBtn" class="copy-btn" title="Copy JSON to clipboard">
-                📋 Copy
+                📋 <span data-i18n="actions.copy">複製</span>
               </button>
             </div>
             <div class="json-viewer" id="jsonViewer">Loading...</div>
@@ -738,9 +748,9 @@
 
           <div class="workflow-detail hidden" id="diagramSection">
             <div class="section-header">
-              <h4>Workflow Diagram</h4>
+              <h4 data-i18n="workflow.diagram">工作流程圖</h4>
               <button id="copyDiagramBtn" class="copy-btn" title="Copy diagram code to clipboard">
-                📋 Copy
+                📋 <span data-i18n="actions.copy">複製</span>
               </button>
             </div>
             <div id="diagramViewer">Loading diagram...</div>
@@ -1056,9 +1066,10 @@
         this.state.categories.forEach(category => {
           const option = document.createElement('option');
           option.value = category;
-          option.textContent = category;
+          const translated = this.i18n ? this.i18n.t(`categories.${category}`) : null;
+          option.textContent = translated || category;
           select.appendChild(option);
-          console.log(`Added category option: ${category}`);
+          console.log(`Added category option: "${category}" -> "${translated || category}"`);
         });
         
         console.log(`Category filter populated with ${select.options.length - 1} categories`);
@@ -1258,10 +1269,10 @@
                             <div class="workflow-meta">
                                 <div class="status-dot ${statusClass}"></div>
                                 <div class="complexity-dot ${complexityClass}"></div>
-                                <span>${workflow.node_count} nodes</span>
-                                <span class="category-badge">${this.escapeHtml(category)}</span>
+                                <span>${workflow.node_count} ${this.i18n ? this.i18n.t('workflow.nodes') : 'nodes'}</span>
+                                <span class="category-badge">${this.escapeHtml(this.i18n ? this.i18n.t(`categories.${category}`) || category : category)}</span>
                             </div>
-                            <span class="trigger-badge">${this.escapeHtml(workflow.trigger_type)}</span>
+                            <span class="trigger-badge">${this.escapeHtml(this.i18n ? this.i18n.t(`triggers.${workflow.trigger_type.toLowerCase()}`) || workflow.trigger_type : workflow.trigger_type)}</span>
                         </div>
                         
                         <h3 class="workflow-title">${this.escapeHtml(workflow.name)}</h3>
@@ -1269,7 +1280,7 @@
                         
                         ${workflow.integrations.length > 0 ? `
                             <div class="workflow-integrations">
-                                <h4 class="integrations-title">Integrations (${workflow.integrations.length})</h4>
+                                <h4 class="integrations-title">${this.i18n ? this.i18n.t('workflow.integrations') : 'Integrations'} (${workflow.integrations.length})</h4>
                                 <div class="integrations-list">
                                     ${integrations}
                                     ${moreIntegrations}
@@ -1303,7 +1314,7 @@
             .map(integration => `<span class="integration-tag">${this.escapeHtml(integration)}</span>`)
             .join(' ');
         } else {
-          this.elements.modalIntegrations.textContent = 'No integrations found';
+          this.elements.modalIntegrations.textContent = this.i18n ? this.i18n.t('workflow.noIntegrations') : 'No integrations found';
         }
 
         // Set download link
@@ -1491,11 +1502,161 @@
         button.innerHTML = '📋 Copy';
         button.classList.remove('copied');
       }
+
+      // I18n integration methods
+      async initI18n() {
+        // Initialize i18n system
+        this.i18n = new I18n();
+        await this.i18n.init();
+
+        // Set up language selector
+        const languageSelect = document.getElementById('languageSelect');
+        if (languageSelect) {
+          languageSelect.value = this.i18n.getCurrentLanguage();
+          languageSelect.addEventListener('change', async (e) => {
+            await this.i18n.setLanguage(e.target.value);
+            this.updateAllTranslations();
+          });
+        }
+
+        // Listen for language change events
+        window.addEventListener('languageChanged', () => {
+          this.updateAllTranslations();
+        });
+
+        // Initial translation update
+        this.updateAllTranslations();
+      }
+
+      updateAllTranslations() {
+        // Update all elements with data-i18n attribute
+        document.querySelectorAll('[data-i18n]').forEach(element => {
+          const key = element.getAttribute('data-i18n');
+          element.textContent = this.i18n.t(key);
+        });
+
+        // Update placeholders
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+          const key = element.getAttribute('data-i18n-placeholder');
+          element.placeholder = this.i18n.t(key);
+        });
+
+        // Update dynamic content
+        this.updateDynamicTranslations();
+      }
+
+      updateDynamicTranslations() {
+        // Update results count
+        this.updateResultsCount();
+
+        // Update modal content if open
+        if (this.currentWorkflow) {
+          this.updateModalTranslations();
+        }
+
+        // Update copy buttons
+        this.resetCopyButton('copyJsonBtn');
+        this.resetCopyButton('copyDiagramBtn');
+
+        // Update category filter options with translations
+        this.updateCategoryFilterTranslations();
+
+        // Re-render workflow cards with translated content
+        if (this.state.workflows.length > 0) {
+          this.renderWorkflows();
+        }
+      }
+
+      updateCategoryFilterTranslations() {
+        const select = this.elements.categoryFilter;
+        if (!select) return;
+
+        // Update existing options (skip the first "All Categories" option)
+        for (let i = 1; i < select.options.length; i++) {
+          const option = select.options[i];
+          const category = option.value;
+          const translated = this.i18n ? this.i18n.t(`categories.${category}`) : null;
+          option.textContent = translated || category;
+          console.log(`Translating category "${category}" to "${translated || category}"`);
+        }
+      }
+
+      updateModalTranslations() {
+        if (!this.currentWorkflow) return;
+
+        // Update modal stats with translated labels
+        const category = this.getWorkflowCategory(this.currentWorkflow.filename);
+        this.elements.modalStats.innerHTML = `
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+            <div><strong>${this.i18n.t('status.title')}:</strong> ${this.currentWorkflow.active ? this.i18n.t('status.active') : this.i18n.t('status.inactive')}</div>
+            <div><strong>${this.i18n.t('filters.trigger')}:</strong> ${this.i18n.t(`triggers.${this.currentWorkflow.trigger_type.toLowerCase()}`)}</div>
+            <div><strong>${this.i18n.t('filters.complexity')}:</strong> ${this.i18n.t(`complexity.${this.currentWorkflow.complexity}`)}</div>
+            <div><strong>${this.i18n.t('workflow.nodes')}:</strong> ${this.currentWorkflow.node_count}</div>
+            <div><strong>${this.i18n.t('filters.category')}:</strong> ${this.escapeHtml(category)}</div>
+          </div>
+        `;
+
+        // Update modal button texts
+        if (this.elements.viewJsonBtn.textContent.includes('Hide')) {
+          this.elements.viewJsonBtn.innerHTML = `📄 <span data-i18n="workflow.hideJson">${this.i18n.t('workflow.hideJson')}</span>`;
+        } else {
+          this.elements.viewJsonBtn.innerHTML = `📄 <span data-i18n="workflow.viewJson">${this.i18n.t('workflow.viewJson')}</span>`;
+        }
+
+        if (this.elements.viewDiagramBtn.textContent.includes('Hide')) {
+          this.elements.viewDiagramBtn.innerHTML = `📊 <span data-i18n="workflow.hideDiagram">${this.i18n.t('workflow.hideDiagram')}</span>`;
+        } else {
+          this.elements.viewDiagramBtn.innerHTML = `📊 <span data-i18n="workflow.diagram">${this.i18n.t('workflow.diagram')}</span>`;
+        }
+      }
+
+      resetCopyButton(buttonId) {
+        const button = document.getElementById(buttonId);
+        if (!button) return;
+
+        button.innerHTML = `📋 <span data-i18n="actions.copy">${this.i18n ? this.i18n.t('actions.copy') : '複製'}</span>`;
+        button.classList.remove('copied');
+      }
+
+      // Override existing methods to include i18n
+      updateResultsCount() {
+        const count = this.state.totalCount;
+        const query = this.state.searchQuery;
+        const category = this.state.filters.category;
+
+        let text = `${this.i18n ? this.i18n.formatNumber(count) : count.toLocaleString()} ${this.i18n ? this.i18n.t('search.workflows') : 'workflows'}`;
+
+        if (query && category !== 'all') {
+          text += ` ${this.i18n ? this.i18n.t('search.foundForQueryInCategory', {query, category}) : `found for "${query}" in "${category}"`}`;
+        } else if (query) {
+          text += ` ${this.i18n ? this.i18n.t('search.foundForQuery', {query}) : `found for "${query}"`}`;
+        } else if (category !== 'all') {
+          text += ` ${this.i18n ? this.i18n.t('search.inCategory', {category}) : `in "${category}"`}`;
+        }
+
+        this.elements.resultsCount.textContent = text;
+      }
+
+      showCopySuccess(buttonId) {
+        const button = document.getElementById(buttonId);
+        if (!button) return;
+
+        const originalText = button.innerHTML;
+        button.innerHTML = `✅ ${this.i18n ? this.i18n.t('messages.copied') : 'Copied!'}`;
+        button.classList.add('copied');
+
+        setTimeout(() => {
+          button.innerHTML = originalText;
+          button.classList.remove('copied');
+        }, 2000);
+      }
     }
 
-    // Initialize the app
-    document.addEventListener('DOMContentLoaded', () => {
-      window.workflowApp = new WorkflowApp();
+    // Initialize the app with i18n
+    document.addEventListener('DOMContentLoaded', async () => {
+      const app = new WorkflowApp();
+      await app.initI18n();
+      window.workflowApp = app;
     });
   </script>
 </body>
