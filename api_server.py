@@ -548,14 +548,29 @@ def run_server(host: str = "127.0.0.1", port: int = 8000, reload: bool = False):
         log_level="info"
     )
 
+# Vercel handler
+def handler(request):
+    """Vercel serverless handler."""
+    # Initialize database on cold start
+    try:
+        stats = db.get_stats()
+        if stats['total'] == 0:
+            print("Warning: Database empty in Vercel environment")
+    except Exception as e:
+        print(f"Database error in Vercel: {e}")
+
+    from mangum import Mangum
+    asgi_handler = Mangum(app)
+    return asgi_handler(request)
+
 if __name__ == "__main__":
     import argparse
-    
+
     parser = argparse.ArgumentParser(description='N8N Workflow Documentation API Server')
     parser.add_argument('--host', default='127.0.0.1', help='Host to bind to')
     parser.add_argument('--port', type=int, default=8000, help='Port to bind to')
     parser.add_argument('--reload', action='store_true', help='Enable auto-reload for development')
-    
+
     args = parser.parse_args()
-    
+
     run_server(host=args.host, port=args.port, reload=args.reload)
