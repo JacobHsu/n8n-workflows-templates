@@ -1232,16 +1232,6 @@ This document catalogs the **Marketing & Advertising Automation** workflows from
 
 ---
 
-### Send
-**Filename:** `1409_Send.json`  
-**Description:** Manual workflow that for data processing. Uses 0 nodes.  
-**Status:** Inactive  
-**Trigger:** Manual  
-**Complexity:** low (0 nodes)  
-**Integrations:** None  
-
----
-
 ### Effortless Email Management with AI
 **Filename:** `1427_Emailreadimap_Manual_Send_Webhook.json`  
 **Description:** Complex multi-step automation that orchestrates Markdown, Textsplittertokensplitter, and OpenAI for data processing. Uses 31 nodes and integrates with 14 services.  
