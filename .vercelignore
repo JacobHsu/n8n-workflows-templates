@@ -1,0 +1,19 @@
+# Vercel ignore file - specify what NOT to deploy
+# Keep database and workflow files for deployment
+!database/
+!database/workflows.db
+!workflows/
+
+# Ignore development files
+.git/
+.claude/
+__pycache__/
+*.pyc
+*.log
+.env
+.vscode/
+.idea/
+*.tmp
+*.temp
+test_*.json
+*_test.json

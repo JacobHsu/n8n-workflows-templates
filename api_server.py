@@ -46,12 +46,25 @@ async def startup_event():
     try:
         stats = db.get_stats()
         if stats['total'] == 0:
-            print("⚠️  Warning: No workflows found in database. Run indexing first.")
+            print("⚠️  Warning: No workflows found in database.")
+            # Try to rebuild database from workflows in serverless environment
+            import os
+            if os.path.exists("workflows") and len(os.listdir("workflows")) > 0:
+                print("🔄 Attempting to rebuild database from workflow files...")
+                try:
+                    from import_workflows import main as rebuild_db
+                    rebuild_db()
+                    stats = db.get_stats()
+                    print(f"✅ Database rebuilt: {stats['total']} workflows indexed")
+                except Exception as rebuild_error:
+                    print(f"❌ Database rebuild failed: {rebuild_error}")
         else:
             print(f"✅ Database connected: {stats['total']} workflows indexed")
     except Exception as e:
         print(f"❌ Database connection failed: {e}")
-        raise
+        # Don't raise in serverless environment - continue with empty database
+        if not os.environ.get('VERCEL'):
+            raise
 
 # Response models
 class WorkflowSummary(BaseModel):
@@ -549,19 +562,8 @@ def run_server(host: str = "127.0.0.1", port: int = 8000, reload: bool = False):
     )
 
 # Vercel handler
-def handler(request):
-    """Vercel serverless handler."""
-    # Initialize database on cold start
-    try:
-        stats = db.get_stats()
-        if stats['total'] == 0:
-            print("Warning: Database empty in Vercel environment")
-    except Exception as e:
-        print(f"Database error in Vercel: {e}")
-
-    from mangum import Mangum
-    asgi_handler = Mangum(app)
-    return asgi_handler(request)
+from mangum import Mangum
+handler = Mangum(app, lifespan="off")
 
 if __name__ == "__main__":
     import argparse
