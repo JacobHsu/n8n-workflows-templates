@@ -1,16 +1,8 @@
 {
-  "functions": {
-    "api_server.py": {
-      "runtime": "@vercel/python@4.3.0"
-    }
-  },
-  "routes": [
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "/api_server.py"
+      "source": "/(.*)",
+      "destination": "/api"
     }
-  ],
-  "env": {
-    "PYTHONPATH": "./"
-  }
+  ]
 }
