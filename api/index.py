@@ -110,6 +110,5 @@ async def get_workflow(filename: str):
             content={"error": f"Failed to get workflow: {str(e)}"}
         )
 
-# Vercel handler
-from mangum import Mangum
-handler = Mangum(app, lifespan="off")
+# Export app for Vercel
+# Vercel will automatically handle ASGI apps
