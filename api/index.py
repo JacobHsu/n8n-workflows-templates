@@ -92,24 +92,32 @@ async def list_workflows():
             return {"workflows": [], "total": 0, "message": "Workflows directory not found"}
 
         workflow_files = []
-        for file in os.listdir(workflows_dir):
-            if file.endswith('.json'):
-                try:
-                    file_path = os.path.join(workflows_dir, file)
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        workflow_data = json.load(f)
 
-                    workflow_files.append({
-                        "filename": file,
-                        "name": workflow_data.get("name", file),
-                        "tags": workflow_data.get("tags", []),
-                        "nodes": len(workflow_data.get("nodes", [])),
-                        "createdAt": workflow_data.get("createdAt", ""),
-                        "updatedAt": workflow_data.get("updatedAt", "")
-                    })
-                except Exception as e:
-                    # Skip problematic files
-                    continue
+        # Recursively search for JSON files in all subdirectories
+        for root, dirs, files in os.walk(workflows_dir):
+            for file in files:
+                if file.endswith('.json'):
+                    try:
+                        file_path = os.path.join(root, file)
+                        with open(file_path, 'r', encoding='utf-8') as f:
+                            workflow_data = json.load(f)
+
+                        # Get relative path from workflows directory
+                        relative_path = os.path.relpath(file_path, workflows_dir)
+                        category = os.path.dirname(relative_path) if os.path.dirname(relative_path) else "Uncategorized"
+
+                        workflow_files.append({
+                            "filename": relative_path.replace("\\", "/"),  # Use forward slashes for web
+                            "name": workflow_data.get("name", file),
+                            "category": category,
+                            "tags": workflow_data.get("tags", []),
+                            "nodes": len(workflow_data.get("nodes", [])),
+                            "createdAt": workflow_data.get("createdAt", ""),
+                            "updatedAt": workflow_data.get("updatedAt", "")
+                        })
+                    except Exception as e:
+                        # Skip problematic files
+                        continue
 
         return {
             "workflows": workflow_files,
@@ -122,13 +130,14 @@ async def list_workflows():
             content={"error": f"Failed to list workflows: {str(e)}"}
         )
 
-@app.get("/api/workflows/{filename}")
+@app.get("/api/workflows/{filename:path}")
 async def get_workflow(filename: str):
-    """Get a specific workflow by filename."""
+    """Get a specific workflow by filename (supports subdirectories)."""
     try:
         project_root = os.path.dirname(os.path.dirname(__file__))
         workflows_dir = os.path.join(project_root, "workflows")
-        file_path = os.path.join(workflows_dir, filename)
+        # Convert web path separators back to OS path separators
+        file_path = os.path.join(workflows_dir, filename.replace("/", os.sep))
 
         if not os.path.exists(file_path):
             return JSONResponse(
@@ -147,13 +156,14 @@ async def get_workflow(filename: str):
             content={"error": f"Failed to get workflow: {str(e)}"}
         )
 
-@app.get("/api/workflows/{filename}/download")
+@app.get("/api/workflows/{filename:path}/download")
 async def download_workflow(filename: str):
-    """Download a specific workflow file."""
+    """Download a specific workflow file (supports subdirectories)."""
     try:
         project_root = os.path.dirname(os.path.dirname(__file__))
         workflows_dir = os.path.join(project_root, "workflows")
-        file_path = os.path.join(workflows_dir, filename)
+        # Convert web path separators back to OS path separators
+        file_path = os.path.join(workflows_dir, filename.replace("/", os.sep))
 
         if not os.path.exists(file_path):
             return JSONResponse(
@@ -161,9 +171,12 @@ async def download_workflow(filename: str):
                 content={"error": "Workflow not found"}
             )
 
+        # Get just the filename for download
+        download_filename = os.path.basename(filename)
+
         return FileResponse(
             path=file_path,
-            filename=filename,
+            filename=download_filename,
             media_type="application/json"
         )
 
