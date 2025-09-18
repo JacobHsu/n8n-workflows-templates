@@ -1,9 +1,7 @@
 {
   "functions": {
     "api_server.py": {
-      "runtime": "python3.9",
-      "maxDuration": 60,
-      "memory": 1024
+      "runtime": "@vercel/python@4.3.0"
     }
   },
   "routes": [
