@@ -4,7 +4,8 @@ Simple FastAPI Server for N8N Workflow Documentation (Vercel Compatible)
 """
 
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import json
 import os
@@ -26,14 +27,50 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
+# Mount static files
+project_root = os.path.dirname(os.path.dirname(__file__))
+static_path = os.path.join(project_root, "static")
+if os.path.exists(static_path):
+    app.mount("/static", StaticFiles(directory=static_path), name="static")
+
+# Serve additional static files with correct routes
+@app.get("/src/{file_path:path}")
+async def serve_src_files(file_path: str):
+    """Serve files from the src directory."""
+    try:
+        full_path = os.path.join(project_root, "static", "src", file_path)
+        if os.path.exists(full_path):
+            return FileResponse(full_path)
+        else:
+            return JSONResponse(status_code=404, content={"error": "File not found"})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+@app.get("/", response_class=HTMLResponse)
 async def root():
-    """Root endpoint."""
-    return {
-        "message": "N8N Workflow Documentation API",
-        "version": "2.0.0",
-        "status": "running"
-    }
+    """Serve the main HTML interface."""
+    try:
+        project_root = os.path.dirname(os.path.dirname(__file__))
+        html_path = os.path.join(project_root, "static", "index.html")
+
+        if os.path.exists(html_path):
+            with open(html_path, 'r', encoding='utf-8') as f:
+                html_content = f.read()
+            return HTMLResponse(content=html_content)
+        else:
+            return HTMLResponse(content="""
+            <html>
+                <head><title>N8N Workflow Documentation</title></head>
+                <body>
+                    <h1>N8N Workflow Documentation API</h1>
+                    <p>Version: 2.0.0</p>
+                    <p>Status: Running</p>
+                    <p><a href="/api/workflows">View Workflows API</a></p>
+                </body>
+            </html>
+            """)
+    except Exception as e:
+        return HTMLResponse(content=f"<html><body><h1>Error</h1><p>{str(e)}</p></body></html>")
 
 @app.get("/health")
 async def health_check():
@@ -108,6 +145,32 @@ async def get_workflow(filename: str):
         return JSONResponse(
             status_code=500,
             content={"error": f"Failed to get workflow: {str(e)}"}
+        )
+
+@app.get("/api/workflows/{filename}/download")
+async def download_workflow(filename: str):
+    """Download a specific workflow file."""
+    try:
+        project_root = os.path.dirname(os.path.dirname(__file__))
+        workflows_dir = os.path.join(project_root, "workflows")
+        file_path = os.path.join(workflows_dir, filename)
+
+        if not os.path.exists(file_path):
+            return JSONResponse(
+                status_code=404,
+                content={"error": "Workflow not found"}
+            )
+
+        return FileResponse(
+            path=file_path,
+            filename=filename,
+            media_type="application/json"
+        )
+
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Failed to download workflow: {str(e)}"}
         )
 
 # Export app for Vercel
